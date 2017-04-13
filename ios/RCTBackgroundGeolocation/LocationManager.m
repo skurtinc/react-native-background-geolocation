@@ -278,16 +278,7 @@ enum {
         AudioServicesPlaySystemSound (operationMode  == FOREGROUND ? paceChangeYesSound : paceChangeNoSound);
     }
 
-//    if (operationMode == FOREGROUND || !_config.saveBatteryOnBackground) {
-//        isAcquiringSpeed = YES;
-//        isAcquiringStationaryLocation = NO;
-//        [self stopMonitoringForRegion];
-//        [self stopMonitoringSignificantLocationChanges];
-//    } else if (operationMode == BACKGROUND) {
-//        isAcquiringSpeed = NO;
-//        isAcquiringStationaryLocation = YES;
-        [self startMonitoringSignificantLocationChanges];
-//    }
+    [self startMonitoringSignificantLocationChanges];
 
     aquireStartTime = [NSDate date];
 
@@ -396,7 +387,7 @@ enum {
         return;
     }
 
-    NSLog(@">>>>Q %@", locationQueue);
+    NSLog(@"Location queued %@", locationQueue);
 
     if ([locationQueue count] < 1) {
         return;
@@ -420,9 +411,6 @@ enum {
                 NSError *error = nil;
                 if ([location postAsJSON:_config.url withHttpHeaders:_config.httpHeaders error:&error]) {
                     SQLiteLocationDAO* locationDAO = [SQLiteLocationDAO sharedInstance];
-//                    if (location.id != nil) {
-//                        [locationDAO deleteLocation:location.id];
-//                    }
                 } else {
                     DDLogWarn(@"LocationManager postJSON failed: error: %@", error.userInfo[@"NSLocalizedDescription"]);
                     hasConnectivity = [reach isReachable];
@@ -501,7 +489,7 @@ enum {
 - (void) locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
 {
     DDLogDebug(@"LocationManager didUpdateLocations (operationMode: %lu)", (unsigned long)operationMode);
-    NSLog(@"> GOT LOCATION UPDATE");
+    NSLog(@"Location update triggered");
     locationError = nil;
     BGOperationMode actAsInMode = operationMode;
 

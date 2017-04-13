@@ -243,11 +243,9 @@ enum {
     [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponse error:outError];
 
     if (*outError == nil && [urlResponse statusCode] == 201) {
-        NSLog(@">>>>>>>>> SENT");
-        NSLog(jsonStr);
         return YES;
     }
-    NSLog(@"Issue");
+
     return NO;
 }
 
