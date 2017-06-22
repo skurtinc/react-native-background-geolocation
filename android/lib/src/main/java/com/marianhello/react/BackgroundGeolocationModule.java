@@ -272,20 +272,30 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
             return;
         }
 
-        if (hasPermissions()) {
-            log.info("Requesting permissions from user");
-            startAndBindBackgroundService();
-            success.invoke(true);
-        } else {
-            //TODO: requestPermissions
+        try {
+            if (hasPermissions()) {
+                log.info("Requesting permissions from user");
+                startAndBindBackgroundService();
+                success.invoke(true);
+            } else {
+                //TODO: requestPermissions
+                log.warn("Attempt to start service without location permissions!");
+                error.invoke("Missing permission to track location!");
+            }
+        } catch (NullPointerException e) {
+            error.invoke("Activity is null: " + e.getMessage());
         }
     }
 
     @ReactMethod
     public void stop(Callback success, Callback error) {
-        doUnbindService();
-        stopBackgroundService();
-        success.invoke(true);
+        try {
+            doUnbindService();
+            stopBackgroundService();
+            success.invoke(true);
+        } catch (NullPointerException e) {
+            error.invoke("Activity is null: " + e.getMessage());
+        }
     }
 
     @ReactMethod
@@ -301,20 +311,30 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     @ReactMethod
-    public void showAppSettings() {
-        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
-        intent.setData(Uri.parse("package:" + getContext().getPackageName()));
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-        intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
-        getContext().startActivity(intent);
+    public void showAppSettings(Callback success, Callback error) {
+        try {
+            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+            intent.addCategory(Intent.CATEGORY_DEFAULT);
+            intent.setData(Uri.parse("package:" + getContext().getPackageName()));
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+            intent.addFlags(Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS);
+            getContext().startActivity(intent);
+            success.invoke(true);
+        } catch (NullPointerException e) {
+            error.invoke("Activity was null: " + e.getMessage());
+        }
     }
 
     @ReactMethod
-    public void showLocationSettings() {
-        Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-        getActivity().startActivity(settingsIntent);
+    public void showLocationSettings(Callback success, Callback error) {
+        try {
+            Intent settingsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+            getActivity().startActivity(settingsIntent);
+            success.invoke(true);
+        } catch (NullPointerException e) {
+            error.invoke("Activity was null: " + e.getMessage());
+        }
     }
 
     @ReactMethod
