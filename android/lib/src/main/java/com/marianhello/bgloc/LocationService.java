@@ -327,7 +327,7 @@ public class LocationService extends Service {
         location.setBatchStartMillis(System.currentTimeMillis() + ONE_MINUTE); // prevent sync of not yet posted location
         persistLocation(location);
 
-        if (config.hasUrl() || config.hasSyncUrl()) {
+        if (config.hasSyncUrl()) {
             Long locationsCount = dao.locationsForSyncCount(System.currentTimeMillis());
             log.debug("Location to sync: {} threshold: {}", locationsCount, config.getSyncThreshold());
             if (locationsCount >= config.getSyncThreshold()) {
@@ -439,15 +439,20 @@ public class LocationService extends Service {
         @Override
         protected Boolean doInBackground(BackgroundLocation... locations) {
             log.debug("Executing PostLocationTask#doInBackground");
-            JSONArray jsonLocations = new JSONArray();
-            for (BackgroundLocation location : locations) {
-                try {
-                    JSONObject jsonLocation = location.toJSONObject();
-                    jsonLocations.put(jsonLocation);
-                } catch (JSONException e) {
-                    log.warn("Location to json failed: {}", location.toString());
-                    return false;
-                }
+            if (locations.length == 0) {
+                return false;
+            }
+
+            JSONObject jsonLocation = null;
+            BackgroundLocation firstLocation = null;
+
+            try {
+                // Take the first location
+                firstLocation = locations[0];
+                jsonLocation = firstLocation.toJSONObject();
+            } catch (JSONException e) {
+                log.warn("Location to json failed: {}", firstLocation.toString());
+                return false;
             }
 
             String url = config.getUrl();
@@ -455,7 +460,7 @@ public class LocationService extends Service {
             int responseCode;
 
             try {
-                responseCode = HttpPostService.postJSON(url, jsonLocations, config.getHttpHeaders());
+                responseCode = HttpPostService.postJSON(url, jsonLocation, config.getHttpHeaders());
             } catch (Exception e) {
                 hasConnectivity = isNetworkAvailable();
                 log.warn("Error while posting locations: {}", e.getMessage());

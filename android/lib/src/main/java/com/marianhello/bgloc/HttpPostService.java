@@ -44,7 +44,18 @@ public class HttpPostService {
         } finally {
             if (os != null) {
                 os.flush();
-                os.close();
+                try {
+                    os.close();
+                } catch (Exception e) {
+                
+                }
+            }
+            if (conn != null) {
+                try {
+                    conn.disconnect();
+                } catch (Exception e) {
+                
+                }
             }
         }
 
@@ -94,6 +105,9 @@ public class HttpPostService {
             }
             if (is != null) {
                 is.close();
+            }
+            if (conn != null) {
+                conn.disconnect();
             }
         }
 
