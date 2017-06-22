@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager; 
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,6 +18,7 @@ import android.os.RemoteException;
 import android.provider.Settings;
 import android.provider.Settings.SettingNotFoundException;
 import android.text.TextUtils;
+import android.support.v4.content.ContextCompat;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Callback;
@@ -452,9 +454,15 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
                 .emit(eventName, params);
     }
 
+
     public boolean hasPermissions() {
-        //TODO: implement
-        return true;
+        final Context context = getContext();
+        final String coarseLocationPermission = "android.permission.ACCESS_COARSE_LOCATION";
+        final String fineLocationPermission = "android.permission.ACCESS_FINE_LOCATION";
+        
+        int granted = ContextCompat.checkSelfPermission(context, coarseLocationPermission);
+        granted |=  ContextCompat.checkSelfPermission(context, fineLocationPermission);
+        return granted == PackageManager.PERMISSION_GRANTED;
     }
 
     protected void startAndBindBackgroundService() {
@@ -536,8 +544,10 @@ public class BackgroundGeolocationModule extends ReactContextBaseJavaModule impl
     }
 
     protected Context getContext() {
-        return getActivity().getApplicationContext();
+        return getReactApplicationContext();
     }
+
+
 
     public void persistConfiguration(Config config) throws NullPointerException {
         ConfigurationDAO dao = DAOFactory.createConfigurationDAO(getContext());
