@@ -252,7 +252,7 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
     public void onLocationChanged(Location location) {
         log.debug("Location change: {} isMoving={}", location.toString(), isMoving);
 
-        if (!isMoving && !isAcquiringStationaryLocation && stationaryLocation==null) {
+        if (!isMoving && !isAcquiringStationaryLocation && stationaryLocation == null) {
             // Perhaps our GPS signal was interupted, re-acquire a stationaryLocation now.
             setPace(false);
         }
@@ -394,12 +394,19 @@ public class DistanceFilterLocationProvider extends AbstractLocationProvider imp
 
     public void onPollStationaryLocation(Location location) {
         float stationaryRadius = config.getStationaryRadius();
+        if (stationaryLocation == null) {
+            stationaryLocation = location;
+        }
+
         if (isMoving) {
             return;
         }
+
         if (config.isDebugging()) {
             startTone(Tone.BEEP);
         }
+
+
         float distance = abs(location.distanceTo(stationaryLocation) - stationaryLocation.getAccuracy() - location.getAccuracy());
 
         if (config.isDebugging()) {
