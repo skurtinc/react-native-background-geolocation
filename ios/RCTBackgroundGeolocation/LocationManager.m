@@ -42,7 +42,7 @@ static NSString * const Domain = @"com.marianhello";
 
 enum {
     maxLocationWaitTimeInSeconds = 15,
-    maxLocationAgeInSeconds = 30
+    maxLocationAgeInSeconds = 60
 };
 
 @interface LocationManager () <CLLocationManagerDelegate>
@@ -164,7 +164,7 @@ enum {
     }
 
     if (_config.syncUrl != nil) {
-        uploader = [[LocationUploader alloc] init];
+//        uploader = [[LocationUploader alloc] init];
     }
 
     return YES;
@@ -265,6 +265,11 @@ enum {
 {
     DDLogInfo(@"LocationManager switchMode %lu", (unsigned long)mode);
 
+    if (_config.isDebugging) {
+        NSString *modeStr = [NSString stringWithFormat:@"LocationManager switchMode %lu", (unsigned long)mode];
+        [self notify:modeStr];
+    }
+
     operationMode = mode;
 
     if (!isStarted) return;
@@ -273,16 +278,7 @@ enum {
         AudioServicesPlaySystemSound (operationMode  == FOREGROUND ? paceChangeYesSound : paceChangeNoSound);
     }
 
-    if (operationMode == FOREGROUND || !_config.saveBatteryOnBackground) {
-        isAcquiringSpeed = YES;
-        isAcquiringStationaryLocation = NO;
-        [self stopMonitoringForRegion];
-        [self stopMonitoringSignificantLocationChanges];
-    } else if (operationMode == BACKGROUND) {
-        isAcquiringSpeed = NO;
-        isAcquiringStationaryLocation = YES;
-        [self startMonitoringSignificantLocationChanges];
-    }
+    [self startMonitoringSignificantLocationChanges];
 
     aquireStartTime = [NSDate date];
 
@@ -369,7 +365,7 @@ enum {
 - (void) queue:(Location*)location
 {
     DDLogDebug(@"LocationManager queue %@", location);
-
+   
     SQLiteLocationDAO* locationDAO = [SQLiteLocationDAO sharedInstance];
     location.id = [locationDAO persistLocation:location limitRows:_config.maxLocations];
 
@@ -391,6 +387,8 @@ enum {
         return;
     }
 
+    NSLog(@"Location queued %@", locationQueue);
+
     if ([locationQueue count] < 1) {
         return;
     }
@@ -398,7 +396,7 @@ enum {
     // Create a background-task and delegate to Javascript for syncing location
     bgTask = [self createBackgroundTask];
     // retrieve first queued location
-    Location *location = [locationQueue firstObject];
+    Location *location = [locationQueue lastObject];
     [locationQueue removeObject:location];
 
     [self sync:location];
@@ -413,9 +411,6 @@ enum {
                 NSError *error = nil;
                 if ([location postAsJSON:_config.url withHttpHeaders:_config.httpHeaders error:&error]) {
                     SQLiteLocationDAO* locationDAO = [SQLiteLocationDAO sharedInstance];
-                    if (location.id != nil) {
-                        [locationDAO deleteLocation:location.id];
-                    }
                 } else {
                     DDLogWarn(@"LocationManager postJSON failed: error: %@", error.userInfo[@"NSLocalizedDescription"]);
                     hasConnectivity = [reach isReachable];
@@ -494,7 +489,7 @@ enum {
 - (void) locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
 {
     DDLogDebug(@"LocationManager didUpdateLocations (operationMode: %lu)", (unsigned long)operationMode);
-
+    NSLog(@"Location update triggered");
     locationError = nil;
     BGOperationMode actAsInMode = operationMode;
 
