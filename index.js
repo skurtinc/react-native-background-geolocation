@@ -49,12 +49,16 @@ var BackgroundGeolocation = {
     RNBackgroundGeolocation.isLocationEnabled(successFn, errorFn);
   },
 
-  showAppSettings: function() {
-    RNBackgroundGeolocation.showAppSettings();
+  showAppSettings: function(successFn, errorFn) {
+    successFn = successFn || emptyFn;
+    errorFn = errorFn || emptyFn;
+    RNBackgroundGeolocation.showAppSettings(successFn, errorFn);
   },
 
-  showLocationSettings: function() {
-    RNBackgroundGeolocation.showLocationSettings();
+  showLocationSettings: function(successFn, errorFn) {
+    successFn = successFn || emptyFn;
+    errorFn = errorFn || emptyFn;
+    RNBackgroundGeolocation.showLocationSettings(successFn, errorFn);
   },
 
   watchLocationMode: function(successFn, errorFn) {
@@ -104,7 +108,7 @@ var BackgroundGeolocation = {
     errorFn = errorFn || emptyFn;
     RNBackgroundGeolocation.getConfig(successFn, errorFn);
   },
-  
+
   getLogEntries: function(limit, successFn, errorFn) {
     successFn = successFn || emptyFn;
     errorFn = errorFn || emptyFn;
