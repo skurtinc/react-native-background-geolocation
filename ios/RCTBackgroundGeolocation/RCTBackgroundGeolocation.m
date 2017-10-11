@@ -35,7 +35,7 @@ RCT_EXPORT_MODULE();
     if (self) {
         [DDLog addLogger:[DDASLLogger sharedInstance] withLevel:DDLogLevelInfo];
         [DDLog addLogger:[DDTTYLogger sharedInstance] withLevel:DDLogLevelDebug];
-        
+
         sqliteLogger = [[FMDBLogger alloc] initWithLogDirectory:[self loggerDirectory]];
         sqliteLogger.saveThreshold     = 1;
         sqliteLogger.saveInterval      = 0;
@@ -60,7 +60,7 @@ RCT_EXPORT_METHOD(configure:(NSDictionary*)configDictionary success:(RCTResponse
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         Config* config = [Config fromDictionary:configDictionary];
         NSError *error = nil;
-        
+
         if ([locationManager configure:config error:&error]) {
             success(@[[NSNull null]]);
         } else {
@@ -101,19 +101,19 @@ RCT_EXPORT_METHOD(finish:(int)taskId)
     [locationManager finish];
 }
 
-RCT_EXPORT_METHOD(isLocationEnabled:(RCTResponseSenderBlock)callback)
+RCT_EXPORT_METHOD(isLocationEnabled:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #isLocationEnabled");
-    callback(@[@([locationManager isLocationEnabled])]);
+    success(@[@([locationManager isLocationEnabled])]);
 }
 
-RCT_EXPORT_METHOD(showAppSettings)
+RCT_EXPORT_METHOD(showAppSettings:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #showAppSettings");
     [locationManager showAppSettings];
 }
 
-RCT_EXPORT_METHOD(showLocationSettings)
+RCT_EXPORT_METHOD(showLocationSettings:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #showLocationSettings");
     [locationManager showLocationSettings];
@@ -122,7 +122,7 @@ RCT_EXPORT_METHOD(showLocationSettings)
 RCT_EXPORT_METHOD(watchLocationMode:(RCTResponseSenderBlock)success failure:(RCTResponseSenderBlock)failure)
 {
     RCTLogInfo(@"RCTBackgroundGeolocation #watchLocationMode");
-    //TODO: implement    
+    //TODO: implement
 }
 
 RCT_EXPORT_METHOD(stopWatchingLocationMode)
@@ -165,7 +165,7 @@ RCT_EXPORT_METHOD(deleteAllLocations:(RCTResponseSenderBlock)success failure:(RC
 {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
     NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : NSTemporaryDirectory();
-    
+
     return [basePath stringByAppendingPathComponent:@"SQLiteLogger"];
 }
 
